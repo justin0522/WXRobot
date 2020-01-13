@@ -14,12 +14,21 @@ namespace WXRobot
             string url = ConfigurationManager.AppSettings.Get("url");
             string textMessage = ConfigurationManager.AppSettings.Get("message");
             string imagePath = ConfigurationManager.AppSettings.Get("imagepath");
-
+            string mentionedList = ConfigurationManager.AppSettings.Get("mentionedlist");
+            List<string> mentions = new List<string>();
+            if (!string.IsNullOrEmpty(mentionedList))
+            {
+                var array = mentionedList.Split(';', ',');
+                foreach (var item in array)
+                {
+                    mentions.Add(item);
+                }
+            }
             var client = new MyHttpClient();
 
             if (!string.IsNullOrEmpty(textMessage))
             {
-                client.Send(url, ProcessTextMessage(textMessage));
+                client.Send(url, ProcessTextMessage(textMessage, false, mentions));
             }
 
             if (!string.IsNullOrEmpty(imagePath) && File.Exists(imagePath))
@@ -32,7 +41,7 @@ namespace WXRobot
 
 
 
-        static RobotMessage ProcessTextMessage(string content, bool isAtAll = false)
+        static RobotMessage ProcessTextMessage(string content, bool isAtAll, List<string> list)
         {
             var message = new RobotMessageText(content);
             if (isAtAll)
@@ -41,6 +50,10 @@ namespace WXRobot
                 {
                     "@all"
                 };
+            }
+            else
+            {
+                message.Text.MentionedList = list;
             }
             return message;
         }
